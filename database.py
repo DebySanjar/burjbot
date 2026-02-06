@@ -1,25 +1,26 @@
 """Ma'lumotlarni saqlash uchun oddiy modul"""
 
-# Vakansiyalar ro'yxati
-vacancies = {}  # {job_type: vacancy_text}
+# Vakansiya matni
+current_vacancy = """Assalomu alaykum! 👋
+
+Burj Aptekaga ishga ariza berish uchun iltimos quyidagi ma'lumotlarni yozib yuboring.
+
+Sizning ma'lumotlaringizni qabul qilingandan so'ng siz bilan bog'lanamiz"""
 
 # Foydalanuvchilar ro'yxati
-users = {}  # {user_id: {'name': '', 'age': '', 'phone': '', ...}}
+users = {}
 
 # Barcha foydalanuvchi ID lari
 all_user_ids = set()
 
-def get_vacancies():
-    """Barcha vakansiyalarni olish"""
-    return vacancies
+def get_vacancy():
+    """Joriy vakansiyani olish"""
+    return current_vacancy
 
-def get_vacancy(job_type):
-    """Ma'lum ish turi uchun vakansiyani olish"""
-    return vacancies.get(job_type)
-
-def set_vacancy(job_type, text):
-    """Vakansiyani saqlash"""
-    vacancies[job_type] = text
+def set_vacancy(text):
+    """Vakansiyani yangilash"""
+    global current_vacancy
+    current_vacancy = text
 
 def add_user_id(user_id):
     """Foydalanuvchi ID sini saqlash"""
@@ -43,13 +44,10 @@ def search_users(query):
     results = []
     
     for user_id, data in users.items():
-        # Ism bo'yicha qidirish
         if query in data.get('name', '').lower():
             results.append((user_id, data))
-        # Telefon bo'yicha qidirish
         elif query in data.get('phone', '').lower():
             results.append((user_id, data))
-        # Ish tajribasi (manzil) bo'yicha qidirish
         elif query in data.get('work_experience', '').lower():
             results.append((user_id, data))
     

@@ -2,7 +2,7 @@ from aiogram.fsm.state import State, StatesGroup
 
 class FormStates(StatesGroup):
     """Anketa to'ldirish holatlari"""
-    job_type = State()  # Ish turi tanlash
+    job_type = State()
     name = State()
     age = State()
     photo = State()
@@ -11,15 +11,7 @@ class FormStates(StatesGroup):
     salary = State()
     phone = State()
 
-class VacancyStates(StatesGroup):
-    """Vakansiya e'lon qilish holatlari"""
-    job_type = State()  # Ish turi
-    location = State()  # Manzil
-    time = State()  # Vaqt
-    salary = State()  # Maosh
-    age_limit = State()  # Yosh chegarasi
-    additional = State()  # Qo'shimcha
-
 class AdminStates(StatesGroup):
     """Admin holatlari"""
+    vacancy_text = State()
     search_query = State()
