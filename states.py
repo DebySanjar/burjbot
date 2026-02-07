@@ -5,6 +5,7 @@ class FormStates(StatesGroup):
     job_type = State()
     name = State()
     age = State()
+    address = State()
     photo = State()
     family_status = State()
     work_experience = State()
@@ -15,3 +16,12 @@ class AdminStates(StatesGroup):
     """Admin holatlari"""
     vacancy_text = State()
     search_query = State()
+
+class ContactStates(StatesGroup):
+    """Adminga murojaat holatlari"""
+    message = State()
+
+class ReplyStates(StatesGroup):
+    """Admin javob berish holatlari"""
+    user_id = State()
+    message = State()

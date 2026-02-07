@@ -48,6 +48,8 @@ def search_users(query):
             results.append((user_id, data))
         elif query in data.get('phone', '').lower():
             results.append((user_id, data))
+        elif query in data.get('address', '').lower():
+            results.append((user_id, data))
         elif query in data.get('work_experience', '').lower():
             results.append((user_id, data))
     

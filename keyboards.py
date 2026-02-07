@@ -66,13 +66,44 @@ def admin_keyboard():
     )
     return keyboard
 
+def vacancy_confirm_keyboard():
+    """Vakansiya tasdiqlash tugmalari"""
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="✅ E'lon qilish", callback_data="confirm_vacancy"),
+                InlineKeyboardButton(text="🔄 Qayta yozish", callback_data="restart_vacancy")
+            ]
+        ]
+    )
+    return keyboard
+
+def reply_to_user_keyboard(user_id):
+    """Foydalanuvchiga javob berish tugmasi"""
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="💬 Javob berish", callback_data=f"reply_{user_id}")]
+        ]
+    )
+    return keyboard
+
+def about_bot_keyboard():
+    """Bot haqida inline tugmalari"""
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="📞 Adminga murojaat", callback_data="contact_admin")]
+        ]
+    )
+    return keyboard
+
 def search_filter_keyboard():
     """Qidiruv filtri tugmalari"""
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="👤 Ism bo'yicha", callback_data="search_by_name")],
             [InlineKeyboardButton(text="📞 Telefon bo'yicha", callback_data="search_by_phone")],
-            [InlineKeyboardButton(text="📍 Ish tajribasi bo'yicha", callback_data="search_by_location")],
+            [InlineKeyboardButton(text="📍 Manzil bo'yicha", callback_data="search_by_address")],
+            [InlineKeyboardButton(text="💼 Ish tajribasi bo'yicha", callback_data="search_by_work")],
             [InlineKeyboardButton(text="❌ Bekor qilish", callback_data="cancel_search")]
         ]
     )
