@@ -5,11 +5,11 @@ class FormStates(StatesGroup):
     job_type = State()
     name = State()
     age = State()
+    education = State()
+    previous_work = State()
+    current_status = State()
     address = State()
     photo = State()
-    family_status = State()
-    work_experience = State()
-    salary = State()
     phone = State()
 
 class AdminStates(StatesGroup):

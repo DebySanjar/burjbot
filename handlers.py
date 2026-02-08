@@ -8,9 +8,10 @@ from states import FormStates, AdminStates, ContactStates, ReplyStates
 from keyboards import (
     main_menu, cancel_keyboard, confirm_keyboard, admin_keyboard,
     phone_keyboard, search_filter_keyboard, about_bot_keyboard,
-    vacancy_confirm_keyboard, reply_to_user_keyboard
+    vacancy_confirm_keyboard, reply_to_user_keyboard, job_types_keyboard
 )
 import database
+from job_names import JOB_NAMES
 
 router = Router()
 admin_mode = {}
@@ -41,26 +42,37 @@ async def about_bot(message: Message):
 @router.message(F.text == "📝 Anketa to'ldirish")
 async def start_form(message: Message, state: FSMContext):
     await state.set_state(FormStates.job_type)
-    await message.answer("Ishlamoqchi bo'lgan ishingiz:", reply_markup=cancel_keyboard())
+    await message.answer(
+        "Ishlamoqchi bo'lgan ishingiz:",
+        reply_markup=job_types_keyboard()
+    )
+
+@router.callback_query(F.data.startswith("job_"))
+async def process_job_type_callback(callback: CallbackQuery, state: FSMContext):
+    """Ish turini inline button orqali tanlash"""
+    job_type = JOB_NAMES.get(callback.data, "Noma'lum")
+    await state.update_data(job_type=job_type)
+    await state.set_state(FormStates.name)
+    await callback.message.answer("Ismingizni kiriting:", reply_markup=cancel_keyboard())
+    await callback.answer()
 
 @router.message(FormStates.job_type)
-async def process_job_type(message: Message, state: FSMContext):
+async def process_job_type_text(message: Message, state: FSMContext):
+    """Agar text yuborilsa (bekor qilish)"""
     if message.text == "❌ Bekor qilish":
         await state.clear()
         user_id = message.from_user.id
-        is_admin = user_id == ADMIN_ID and admin_mode.get(user_id, True)
+        is_admin = user_id == ADMIN_ID
         await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
         return
-    await state.update_data(job_type=message.text)
-    await state.set_state(FormStates.name)
-    await message.answer("Ismingizni kiriting:", reply_markup=cancel_keyboard())
+    await message.answer("Iltimos, yuqoridagi tugmalardan birini tanlang:", reply_markup=job_types_keyboard())
 
 @router.message(FormStates.name)
 async def process_name(message: Message, state: FSMContext):
     if message.text == "❌ Bekor qilish":
         await state.clear()
         user_id = message.from_user.id
-        is_admin = user_id == ADMIN_ID and admin_mode.get(user_id, True)
+        is_admin = user_id == ADMIN_ID
         await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
         return
     await state.update_data(name=message.text)
@@ -72,10 +84,46 @@ async def process_age(message: Message, state: FSMContext):
     if message.text == "❌ Bekor qilish":
         await state.clear()
         user_id = message.from_user.id
-        is_admin = user_id == ADMIN_ID and admin_mode.get(user_id, True)
+        is_admin = user_id == ADMIN_ID
         await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
         return
     await state.update_data(age=message.text)
+    await state.set_state(FormStates.education)
+    await message.answer("Ma'lumotingiz:\n(O'rta maxsus yoki oliy ma'lumot)", reply_markup=cancel_keyboard())
+
+@router.message(FormStates.education)
+async def process_education(message: Message, state: FSMContext):
+    if message.text == "❌ Bekor qilish":
+        await state.clear()
+        user_id = message.from_user.id
+        is_admin = user_id == ADMIN_ID
+        await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
+        return
+    await state.update_data(education=message.text)
+    await state.set_state(FormStates.previous_work)
+    await message.answer("Avval ishlagan joyingiz:\n(Agar bo'lsa)", reply_markup=cancel_keyboard())
+
+@router.message(FormStates.previous_work)
+async def process_previous_work(message: Message, state: FSMContext):
+    if message.text == "❌ Bekor qilish":
+        await state.clear()
+        user_id = message.from_user.id
+        is_admin = user_id == ADMIN_ID
+        await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
+        return
+    await state.update_data(previous_work=message.text)
+    await state.set_state(FormStates.current_status)
+    await message.answer("Hozirda o'qiysizmi yoki ishlaysizmi va qayerda?", reply_markup=cancel_keyboard())
+
+@router.message(FormStates.current_status)
+async def process_current_status(message: Message, state: FSMContext):
+    if message.text == "❌ Bekor qilish":
+        await state.clear()
+        user_id = message.from_user.id
+        is_admin = user_id == ADMIN_ID
+        await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
+        return
+    await state.update_data(current_status=message.text)
     await state.set_state(FormStates.address)
     await message.answer("Manzilingizni kiriting:", reply_markup=cancel_keyboard())
 
@@ -84,7 +132,7 @@ async def process_address(message: Message, state: FSMContext):
     if message.text == "❌ Bekor qilish":
         await state.clear()
         user_id = message.from_user.id
-        is_admin = user_id == ADMIN_ID and admin_mode.get(user_id, True)
+        is_admin = user_id == ADMIN_ID
         await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
         return
     await state.update_data(address=message.text)
@@ -95,52 +143,21 @@ async def process_address(message: Message, state: FSMContext):
 async def process_photo(message: Message, state: FSMContext):
     photo_id = message.photo[-1].file_id
     await state.update_data(photo=photo_id)
-    await state.set_state(FormStates.family_status)
-    await message.answer("Oilaviy sharoitingizni kiriting:\n(masalan: oilaviy yoki turmush qurmagan)", reply_markup=cancel_keyboard())
+    await state.set_state(FormStates.phone)
+    await message.answer(
+        "Telefon raqamingizni yuboring:\n\n📱 Kontakt ulashish tugmasini bosing yoki raqamni yozing.",
+        reply_markup=phone_keyboard()
+    )
 
 @router.message(FormStates.photo)
 async def process_photo_invalid(message: Message, state: FSMContext):
     if message.text == "❌ Bekor qilish":
         await state.clear()
         user_id = message.from_user.id
-        is_admin = user_id == ADMIN_ID and admin_mode.get(user_id, True)
+        is_admin = user_id == ADMIN_ID
         await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
         return
     await message.answer("❌ Iltimos, rasm yuboring!")
-
-@router.message(FormStates.family_status)
-async def process_family_status(message: Message, state: FSMContext):
-    if message.text == "❌ Bekor qilish":
-        await state.clear()
-        user_id = message.from_user.id
-        is_admin = user_id == ADMIN_ID and admin_mode.get(user_id, True)
-        await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
-        return
-    await state.update_data(family_status=message.text)
-    await state.set_state(FormStates.work_experience)
-    await message.answer("Avval qayerda ishlagansiz?\n(Ish tajribangiz)", reply_markup=cancel_keyboard())
-
-@router.message(FormStates.work_experience)
-async def process_work_experience(message: Message, state: FSMContext):
-    if message.text == "❌ Bekor qilish":
-        await state.clear()
-        user_id = message.from_user.id
-        is_admin = user_id == ADMIN_ID and admin_mode.get(user_id, True)
-        await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
-        return
-    await state.update_data(work_experience=message.text)
-    await state.set_state(FormStates.salary)
-    await message.answer("Boshlanishiga qancha oylik maosh hohlayapsiz?", reply_markup=cancel_keyboard())
-
-@router.message(FormStates.salary)
-async def process_salary(message: Message, state: FSMContext):
-    if message.text == "❌ Bekor qilish":
-        await state.clear()
-        user_id = message.from_user.id
-        is_admin = user_id == ADMIN_ID and admin_mode.get(user_id, True)
-        await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
-        return
-    await state.update_data(salary=message.text)
     await state.set_state(FormStates.phone)
     await message.answer("Telefon raqamingizni yuboring:\n\n📱 Kontakt ulashish tugmasini bosing yoki raqamni yozing.", reply_markup=phone_keyboard())
 
@@ -155,10 +172,10 @@ async def process_phone_contact(message: Message, state: FSMContext):
         f"💼 <b>Ish:</b> {data['job_type']}\n"
         f"👤 <b>Ism:</b> {data['name']}\n"
         f"🎂 <b>Yosh:</b> {data['age']}\n"
+        f"🎓 <b>Ma'lumot:</b> {data['education']}\n"
+        f"💼 <b>Avval ishlagan joy:</b> {data['previous_work']}\n"
+        f"📚 <b>Hozirgi holat:</b> {data['current_status']}\n"
         f"📍 <b>Manzil:</b> {data['address']}\n"
-        f"💑 <b>Oilaviy holat:</b> {data['family_status']}\n"
-        f"💼 <b>Ish tajribasi:</b> {data['work_experience']}\n"
-        f"💰 <b>Kutilayotgan maosh:</b> {data['salary']}\n"
         f"📞 <b>Telefon:</b> {data['phone']}\n\n"
         "Ma'lumotlar to'g'rimi?"
     )
@@ -170,7 +187,7 @@ async def process_phone_text(message: Message, state: FSMContext):
     if message.text == "❌ Bekor qilish":
         await state.clear()
         user_id = message.from_user.id
-        is_admin = user_id == ADMIN_ID and admin_mode.get(user_id, True)
+        is_admin = user_id == ADMIN_ID
         await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
         return
     
@@ -182,10 +199,10 @@ async def process_phone_text(message: Message, state: FSMContext):
         f"💼 <b>Ish:</b> {data['job_type']}\n"
         f"👤 <b>Ism:</b> {data['name']}\n"
         f"🎂 <b>Yosh:</b> {data['age']}\n"
+        f"🎓 <b>Ma'lumot:</b> {data['education']}\n"
+        f"💼 <b>Avval ishlagan joy:</b> {data['previous_work']}\n"
+        f"📚 <b>Hozirgi holat:</b> {data['current_status']}\n"
         f"📍 <b>Manzil:</b> {data['address']}\n"
-        f"💑 <b>Oilaviy holat:</b> {data['family_status']}\n"
-        f"💼 <b>Ish tajribasi:</b> {data['work_experience']}\n"
-        f"💰 <b>Kutilayotgan maosh:</b> {data['salary']}\n"
         f"📞 <b>Telefon:</b> {data['phone']}\n\n"
         "Ma'lumotlar to'g'rimi?"
     )
@@ -204,19 +221,25 @@ async def confirm_send(callback: CallbackQuery, state: FSMContext, bot):
         f"💼 <b>Ish:</b> {data['job_type']}\n"
         f"👤 <b>Ism:</b> {data['name']}\n"
         f"🎂 <b>Yosh:</b> {data['age']}\n"
+        f"🎓 <b>Ma'lumot:</b> {data['education']}\n"
+        f"💼 <b>Avval ishlagan joy:</b> {data['previous_work']}\n"
+        f"📚 <b>Hozirgi holat:</b> {data['current_status']}\n"
         f"📍 <b>Manzil:</b> {data['address']}\n"
-        f"💑 <b>Oilaviy holat:</b> {data['family_status']}\n"
-        f"💼 <b>Ish tajribasi:</b> {data['work_experience']}\n"
-        f"💰 <b>Kutilayotgan maosh:</b> {data['salary']}\n"
         f"📞 <b>Telefon:</b> {data['phone']}\n\n"
         f"🆔 <b>Telegram ID:</b> {user.id}\n"
         f"👨‍💼 <b>Username:</b> @{username}"
     )
     
-    await bot.send_photo(chat_id=ADMIN_ID, photo=data['photo'], caption=admin_message, parse_mode="HTML")
+    await bot.send_photo(
+        chat_id=ADMIN_ID,
+        photo=data['photo'],
+        caption=admin_message,
+        parse_mode="HTML",
+        reply_markup=reply_to_user_keyboard(user.id)
+    )
     
     user_id = callback.from_user.id
-    is_admin = user_id == ADMIN_ID and admin_mode.get(user_id, True)
+    is_admin = user_id == ADMIN_ID
     await callback.message.answer("✅ Ma'lumotlaringiz muvaffaqiyatli yuborildi!\n\nTez orada siz bilan bog'lanamiz. 😊", reply_markup=admin_keyboard() if is_admin else main_menu())
     await callback.answer()
     await state.clear()
@@ -225,7 +248,7 @@ async def confirm_send(callback: CallbackQuery, state: FSMContext, bot):
 async def restart_form(callback: CallbackQuery, state: FSMContext):
     await state.clear()
     await state.set_state(FormStates.job_type)
-    await callback.message.answer("🔄 Anketani qayta to'ldiring.\n\nIshlamoqchi bo'lgan ishingiz:", reply_markup=cancel_keyboard())
+    await callback.message.answer("🔄 Anketani qayta to'ldiring.\n\nIshlamoqchi bo'lgan ishingiz:", reply_markup=job_types_keyboard())
     await callback.answer()
 
 @router.message(F.text == "📢 Vakansiya e'lon qilish")

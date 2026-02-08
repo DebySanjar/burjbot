@@ -114,10 +114,9 @@ def job_types_keyboard():
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="💊 Operator", callback_data="job_operator")],
-            [InlineKeyboardButton(text="🧹 Farrosh", callback_data="job_farrosh")],
-            [InlineKeyboardButton(text="🚚 Yetkazib beruvchi", callback_data="job_delivery")],
-            [InlineKeyboardButton(text="📦 Omborchi", callback_data="job_warehouse")],
-            [InlineKeyboardButton(text="💼 Boshqa", callback_data="job_other")]
+            [InlineKeyboardButton(text="💼 Sotuvchi", callback_data="job_sotuvchi")],
+            [InlineKeyboardButton(text="💉 Dori tayyorlash", callback_data="job_dori")],
+            [InlineKeyboardButton(text="🧹 Farrosh", callback_data="job_farrosh")]
         ]
     )
     return keyboard
