@@ -6,6 +6,10 @@ load_dotenv()
 BOT_TOKEN = os.getenv('BOT_TOKEN', '7979034038:AAGs3G1CtNZjju5acfdCMMHbbVwE7yDH7Qc')
 ADMIN_ID = int(os.getenv('ADMIN_ID', '1961347582'))
 
+# Majburiy kanal
+CHANNEL_ID = "@Burj_spravichniy"  # Kanal username
+CHANNEL_URL = "https://t.me/Burj_spravichniy"  # Kanal linki
+
 # Xatoliklarni tekshirish
 if not BOT_TOKEN:
     raise ValueError("BOT_TOKEN topilmadi! .env faylini tekshiring.")

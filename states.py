@@ -19,9 +19,21 @@ class AdminStates(StatesGroup):
 
 class ContactStates(StatesGroup):
     """Adminga murojaat holatlari"""
+    contact_type = State()  # Taklif yoki savol tanlash
     message = State()
+
+class MedicineOrderStates(StatesGroup):
+    """Dori buyurtma holatlari"""
+    order_type = State()  # Retsepli, retsepsiz, tayyorlanadigan
+    message = State()  # Xabar yoki rasm
 
 class ReplyStates(StatesGroup):
     """Admin javob berish holatlari"""
     user_id = State()
     message = State()
+
+class UserReplyStates(StatesGroup):
+    """Foydalanuvchi admin javobiga javob berish holatlari"""
+    admin_message_id = State()
+    message = State()
+    
