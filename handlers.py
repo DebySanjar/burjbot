@@ -54,6 +54,34 @@ async def subscription_required(message_or_callback, bot):
     
     return True
 
+@router.message(Command("cancel"))
+async def cmd_cancel(message: Message, state: FSMContext):
+    """Har qanday holatdan bekor qilish va bosh menyuga qaytish"""
+    await state.clear()
+    user_id = message.from_user.id
+    is_admin = user_id == ADMIN_ID
+    await message.answer(
+        "❌ Bekor qilindi. Bosh menyuga qaytdingiz.",
+        reply_markup=admin_keyboard() if is_admin else main_menu()
+    )
+
+@router.message(Command("help"))
+async def cmd_help(message: Message, bot, state: FSMContext):
+    """Bot haqida ma'lumot"""
+    await state.clear()
+    await message.answer(
+        "🤖 <b>Bot haqida</b>\n\n"
+        "🏥 <i>Burj Apteka</i> uchun ishga qabul qilish boti\n\n"
+        "📋 <b>Imkoniyatlar:</b>\n"
+        "• 📝 Anketa to'ldirish\n"
+        "• 📞 Murojaat qilish\n"
+        "• 💊 Dori buyurtma\n"
+        "• ⚡ Tezkor javob olish\n\n"
+        "📞 <b>Qo'llab-quvvatlash:</b> +998916818880\n\n"
+        "💡 <i>Savollaringiz bo'lsa, murojaat qiling!</i>",
+        parse_mode="HTML"
+    )
+
 @router.message(Command("start"))
 async def cmd_start(message: Message, bot):
     user_id = message.from_user.id

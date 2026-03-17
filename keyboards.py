@@ -111,42 +111,34 @@ def search_filter_keyboard():
     return keyboard
 
 def job_types_keyboard():
-    """Ish turlari ro'yxati - Unicode ranglar"""
+    """Ish turlari ro'yxati"""
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="🟦 💊 Operator", callback_data="job_operator")],
-            [InlineKeyboardButton(text="🟩 💼 Sotuvchi", callback_data="job_sotuvchi")],
-            [InlineKeyboardButton(text="🟨 💉 Dori tayyorlash", callback_data="job_dori")],
-            [InlineKeyboardButton(text="🟪 🧹 Farrosh", callback_data="job_farrosh")]
-        ]
-    )
-    return keyboard
-def contact_options_keyboard():
-    """Murojaat qilish variantlari - Unicode ranglar"""
-    keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="🟦 💡 Taklif yuborish", callback_data="contact_suggestion")],
-            [InlineKeyboardButton(text="🟩 ❓ Savol yuborish", callback_data="contact_question")]
+            [InlineKeyboardButton(text=" Operator", callback_data="job_operator")],
+            [InlineKeyboardButton(text=" Sotuvchi", callback_data="job_sotuvchi")],
+            [InlineKeyboardButton(text=" Dori tayyorlash", callback_data="job_dori")],
+            [InlineKeyboardButton(text="🧹 Farrosh", callback_data="job_farrosh")]
         ]
     )
     return keyboard
 
-def channel_subscription_keyboard(channel_url):
-    """Kanalga a'zo bo'lish tugmalari - Modern dizayn"""
+def contact_options_keyboard():
+    """Murojaat qilish variantlari"""
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="📢 Kanalga qo'shilish", url=channel_url)],
-            [InlineKeyboardButton(text="✅ Tekshirish", callback_data="check_subscription")]
+            [InlineKeyboardButton(text=" Taklif yuborish", callback_data="contact_suggestion")],
+            [InlineKeyboardButton(text="❓ Savol yuborish", callback_data="contact_question")]
         ]
     )
     return keyboard
+
 def medicine_order_keyboard():
     """Dori buyurtma variantlari"""
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="🟦 📋 Retsepli", callback_data="medicine_prescription")],
-            [InlineKeyboardButton(text="🟩 💊 Retsepsiz", callback_data="medicine_no_prescription")],
-            [InlineKeyboardButton(text="🟨 ⚗️ Tayyorlanadigan dori", callback_data="medicine_custom")]
+            [InlineKeyboardButton(text="📋 Retsepli", callback_data="medicine_prescription")],
+            [InlineKeyboardButton(text="💊 Retsepsiz", callback_data="medicine_no_prescription")],
+            [InlineKeyboardButton(text="⚗️ Tayyorlanadigan dori", callback_data="medicine_custom")]
         ]
     )
     return keyboard
@@ -155,6 +147,16 @@ def user_reply_keyboard():
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="💬 Javob berish", callback_data="user_reply")]
+        ]
+    )
+    return keyboard
+
+def channel_subscription_keyboard(channel_url):
+    """Kanalga a'zo bo'lish tugmalari"""
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="📢 Kanalga qo'shilish", url=channel_url)],
+            [InlineKeyboardButton(text="✅ Tekshirish", callback_data="check_subscription")]
         ]
     )
     return keyboard
