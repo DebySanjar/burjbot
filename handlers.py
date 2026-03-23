@@ -759,7 +759,7 @@ async def check_subscription_callback(callback: CallbackQuery, bot):
             show_alert=True
         )
 # Dori buyurtma handlerlari
-@router.message(F.text == "💊 Dori buyurtma")
+@router.message(F.text == "💊 Dori buyurtma berish")
 async def medicine_order_menu(message: Message, bot, state: FSMContext):
     """Dori buyurtma menyusi"""
     # Avval state'ni tozalaymiz
