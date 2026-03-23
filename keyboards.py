@@ -4,9 +4,9 @@ def main_menu():
     """Asosiy menyu"""
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text="📝 Anketa to'ldirish")],
+            [KeyboardButton(text="💊 Dori buyurtma berish")],
             [KeyboardButton(text="📞 Murojaat qilish")],
-            [KeyboardButton(text="💊 Dori buyurtma")],
+            [KeyboardButton(text="📝 Anketa to'ldirish")],
             [KeyboardButton(text="ℹ️ Bot haqida")]
         ],
         resize_keyboard=True
@@ -126,8 +126,19 @@ def contact_options_keyboard():
     """Murojaat qilish variantlari"""
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text=" Taklif yuborish", callback_data="contact_suggestion")],
-            [InlineKeyboardButton(text="❓ Savol yuborish", callback_data="contact_question")]
+            [InlineKeyboardButton(text="💡 Taklif yuborish", callback_data="contact_suggestion")],
+            [InlineKeyboardButton(text="❓ Savol yuborish", callback_data="contact_question")],
+            [InlineKeyboardButton(text="⚠️ Shikoyat qilish", callback_data="contact_complaint")]
+        ]
+    )
+    return keyboard
+
+def complaint_options_keyboard():
+    """Shikoyat turlari"""
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="💊 Dori yuzasidan shikoyat", callback_data="complaint_medicine")],
+            [InlineKeyboardButton(text="👤 Xodim ustidan shikoyat", callback_data="complaint_staff")]
         ]
     )
     return keyboard
@@ -136,9 +147,10 @@ def medicine_order_keyboard():
     """Dori buyurtma variantlari"""
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="📋 Retsepli", callback_data="medicine_prescription")],
-            [InlineKeyboardButton(text="💊 Retsepsiz", callback_data="medicine_no_prescription")],
-            [InlineKeyboardButton(text="⚗️ Tayyorlanadigan dori", callback_data="medicine_custom")]
+            [InlineKeyboardButton(text="🏥 Tibbiy buyum va texnikalar", callback_data="medicine_medical_equipment")],
+            [InlineKeyboardButton(text="⚗️ Tayyorlanadigan dori vositalari", callback_data="medicine_custom")],
+            [InlineKeyboardButton(text="📋 Retsepli dori vositalari", callback_data="medicine_prescription")],
+            [InlineKeyboardButton(text="💊 Retsepsiz dori vositalari", callback_data="medicine_no_prescription")]
         ]
     )
     return keyboard

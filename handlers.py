@@ -3,14 +3,14 @@ from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
-from config import ADMIN_ID, CHANNEL_ID, CHANNEL_URL
+from config import ADMIN_ID, CHANNEL_ID, CHANNEL_URL, SUPER_ADMIN_ID, MEDICINE_ADMIN_ID, ALL_ADMINS
 from states import FormStates, AdminStates, ContactStates, ReplyStates, MedicineOrderStates, UserReplyStates
 from keyboards import (
     main_menu, cancel_keyboard, confirm_keyboard, admin_keyboard,
     phone_keyboard, search_filter_keyboard, about_bot_keyboard,
     vacancy_confirm_keyboard, reply_to_user_keyboard, job_types_keyboard,
     contact_options_keyboard, channel_subscription_keyboard, medicine_order_keyboard,
-    user_reply_keyboard
+    user_reply_keyboard, complaint_options_keyboard
 )
 import database
 from job_names import JOB_NAMES
@@ -18,14 +18,29 @@ from job_names import JOB_NAMES
 router = Router()
 admin_mode = {}
 
+def is_admin(user_id):
+    """Foydalanuvchi admin ekanligini tekshirish"""
+    return user_id in ALL_ADMINS
+
+def is_super_admin(user_id):
+    """Foydalanuvchi super admin ekanligini tekshirish"""
+    return user_id == SUPER_ADMIN_ID
+
+def is_medicine_admin(user_id):
+    """Foydalanuvchi dori admin ekanligini tekshirish"""
+    return user_id == MEDICINE_ADMIN_ID or user_id == SUPER_ADMIN_ID
+
 async def check_user_subscription(bot, user_id):
     """Foydalanuvchi kanalga a'zo ekanligini tekshirish"""
     try:
         member = await bot.get_chat_member(chat_id=CHANNEL_ID, user_id=user_id)
-        return member.status in ['member', 'administrator', 'creator']
+        # left va kicked - a'zo emas, qolganlar a'zo
+        return member.status not in ['left', 'kicked']
     except Exception as e:
         print(f"A'zolikni tekshirishda xatolik: {e}")
-        return False
+        # Xatolik bo'lsa (bot kanalda admin emas yoki boshqa sabab)
+        # Foydalanuvchiga ruxsat beramiz
+        return True
 
 async def subscription_required(message_or_callback, bot):
     """A'zolik talab qilinadi - umumiy funksiya"""
@@ -70,15 +85,16 @@ async def cmd_help(message: Message, bot, state: FSMContext):
     """Bot haqida ma'lumot"""
     await state.clear()
     await message.answer(
-        "🤖 <b>Bot haqida</b>\n\n"
-        "🏥 <i>Burj Apteka</i> uchun ishga qabul qilish boti\n\n"
-        "📋 <b>Imkoniyatlar:</b>\n"
-        "• 📝 Anketa to'ldirish\n"
-        "• 📞 Murojaat qilish\n"
-        "• 💊 Dori buyurtma\n"
-        "• ⚡ Tezkor javob olish\n\n"
-        "📞 <b>Qo'llab-quvvatlash:</b> +998916818880\n\n"
-        "💡 <i>Savollaringiz bo'lsa, murojaat qiling!</i>",
+        "🤖 <b>Burj Apteka Bot</b>\n\n"
+        "🏥 Burj Apteka rasmiy xizmat boti\n\n"
+        "📋 <b>Xizmatlar:</b>\n"
+        "💊 Dori buyurtma - Barcha turdagi dorilar\n"
+        "📝 Ish o'rinlari - Anketa to'ldirish\n"
+        "💬 Murojaat - Savol va takliflar\n"
+        "⚠️ Shikoyatlar - Dori va xodimlar\n\n"
+        "📞 <b>Aloqa:</b> +998954040909\n"
+        "📍 <b>Manzil:</b> Burj Apteka\n\n"
+        "⏰ <b>Ish vaqti:</b> 24/7",
         parse_mode="HTML"
     )
 
@@ -87,11 +103,12 @@ async def cmd_start(message: Message, bot):
     user_id = message.from_user.id
     database.add_user_id(user_id)
     
-    # Admin uchun a'zolik tekshiruvi yo'q
-    if user_id == ADMIN_ID:
+    # Adminlar uchun
+    if is_admin(user_id):
+        admin_type = "Super Admin" if is_super_admin(user_id) else ("Dori Admin" if is_medicine_admin(user_id) else "Admin")
         await message.answer(
-            "🔐 <b>Admin Panel</b>\n\n"
-            "👋 Assalomu alaykum, Admin!\n"
+            f"🔐 <b>{admin_type} Panel</b>\n\n"
+            "👋 Assalomu alaykum!\n"
             "Boshqaruv paneliga xush kelibsiz.",
             parse_mode="HTML",
             reply_markup=admin_keyboard()
@@ -135,13 +152,17 @@ async def about_bot(message: Message, bot, state: FSMContext):
         "• 📝 Anketa to'ldirish\n"
         "• 💬 Admin bilan aloqa\n"
         "• ⚡ Tezkor javob olish\n\n"
-        "📞 <b>Qo'llab-quvvatlash:</b> +998916818880\n\n"
-        "💡 <i>Savollaringiz bo'lsa, murojaat qiling!</i>",
+        "📞 <b>Aloqa:</b> +998954040909\n"
+        "📍 <b>Manzil:</b> Burj Apteka\n\n"
+        "⏰ <b>Ish vaqti:</b> 24/7",
         parse_mode="HTML"
     )
 
 @router.message(F.text == "📝 Anketa to'ldirish")
 async def start_form(message: Message, state: FSMContext, bot):
+    # Avval state'ni tozalaymiz
+    await state.clear()
+    
     if not await subscription_required(message, bot):
         return
         
@@ -333,16 +354,18 @@ async def confirm_send(callback: CallbackQuery, state: FSMContext, bot):
         f"👨‍💼 <b>Username:</b> @{username}"
     )
     
-    await bot.send_photo(
-        chat_id=ADMIN_ID,
-        photo=data['photo'],
-        caption=admin_message,
-        parse_mode="HTML",
-        reply_markup=reply_to_user_keyboard(user.id)
-    )
+    # Asosiy admin va super adminga yuborish
+    for admin_id in [ADMIN_ID, SUPER_ADMIN_ID]:
+        await bot.send_photo(
+            chat_id=admin_id,
+            photo=data['photo'],
+            caption=admin_message,
+            parse_mode="HTML",
+            reply_markup=reply_to_user_keyboard(user.id)
+        )
     
     user_id = callback.from_user.id
-    is_admin = user_id == ADMIN_ID
+    is_admin = user_id in ALL_ADMINS
     await callback.message.answer("✅ Ma'lumotlaringiz muvaffaqiyatli yuborildi!\n\nTez orada siz bilan bog'lanamiz. 😊", reply_markup=admin_keyboard() if is_admin else main_menu())
     await callback.answer()
     await state.clear()
@@ -507,7 +530,7 @@ async def process_contact_message(message: Message, state: FSMContext, bot):
     data = await state.get_data()
     contact_type = data.get('contact_type', 'Murojaat')
     
-    # Adminga xabar yuborish (ID siz)
+    # Adminga xabar yuborish (javob tugmasi yo'q)
     admin_msg = (
         f"📨 <b>Yangi {contact_type.lower()}!</b>\n\n"
         f"👤 <b>Ism:</b> {user.first_name} {user.last_name or ''}\n"
@@ -516,16 +539,20 @@ async def process_contact_message(message: Message, state: FSMContext, bot):
     )
     
     try:
-        await bot.send_message(
-            chat_id=ADMIN_ID,
-            text=admin_msg,
-            parse_mode="HTML",
-            reply_markup=reply_to_user_keyboard(user.id)
+        # Asosiy admin va super adminga yuborish (javob tugmasi yo'q)
+        for admin_id in [ADMIN_ID, SUPER_ADMIN_ID]:
+            await bot.send_message(
+                chat_id=admin_id,
+                text=admin_msg,
+                parse_mode="HTML"
+            )
+        
+        # Foydalanuvchiga xabar
+        response_msg = (
+            f"✅ <b>{contact_type}ingiz uchun rahmat!</b>\n\n"
+            f"Tez orada ko'rib chiqib, kerakli o'zgarishlarni amalga oshiramiz."
         )
-        await message.answer(
-            f"✅ {contact_type}ingiz adminga yuborildi!\n\nTez orada javob beramiz.",
-            reply_markup=main_menu()
-        )
+        await message.answer(response_msg, parse_mode="HTML", reply_markup=main_menu())
     except Exception as e:
         await message.answer(
             "❌ Xatolik yuz berdi. Iltimos, keyinroq urinib ko'ring.",
@@ -659,6 +686,52 @@ async def contact_question(callback: CallbackQuery, state: FSMContext, bot):
         reply_markup=cancel_keyboard()
     )
     await callback.answer()
+
+@router.callback_query(F.data == "contact_complaint")
+async def contact_complaint(callback: CallbackQuery, state: FSMContext, bot):
+    """Shikoyat qilish - tur tanlash"""
+    if not await subscription_required(callback, bot):
+        return
+    
+    await callback.message.answer(
+        "⚠️ <b>Shikoyat qilish</b>\n\n"
+        "Shikoyat turini tanlang:",
+        parse_mode="HTML",
+        reply_markup=complaint_options_keyboard()
+    )
+    await callback.answer()
+
+@router.callback_query(F.data == "complaint_medicine")
+async def complaint_medicine(callback: CallbackQuery, state: FSMContext, bot):
+    """Dori yuzasidan shikoyat"""
+    if not await subscription_required(callback, bot):
+        return
+    
+    await state.set_state(ContactStates.message)
+    await state.update_data(contact_type="Dori yuzasidan shikoyat")
+    await callback.message.answer(
+        "💊 <b>Dori yuzasidan shikoyat</b>\n\n"
+        "Shikoyatingizni yozing. Admin ko'rib chiqadi:",
+        parse_mode="HTML",
+        reply_markup=cancel_keyboard()
+    )
+    await callback.answer()
+
+@router.callback_query(F.data == "complaint_staff")
+async def complaint_staff(callback: CallbackQuery, state: FSMContext, bot):
+    """Xodim ustidan shikoyat"""
+    if not await subscription_required(callback, bot):
+        return
+    
+    await state.set_state(ContactStates.message)
+    await state.update_data(contact_type="Xodim ustidan shikoyat")
+    await callback.message.answer(
+        "👤 <b>Xodim ustidan shikoyat</b>\n\n"
+        "Shikoyatingizni yozing. Admin ko'rib chiqadi:",
+        parse_mode="HTML",
+        reply_markup=cancel_keyboard()
+    )
+    await callback.answer()
 @router.callback_query(F.data == "check_subscription")
 async def check_subscription_callback(callback: CallbackQuery, bot):
     """A'zolikni tekshirish tugmasi bosildi"""
@@ -706,6 +779,23 @@ async def medicine_order_menu(message: Message, bot, state: FSMContext):
         reply_markup=medicine_order_keyboard()
     )
 
+@router.callback_query(F.data == "medicine_medical_equipment")
+async def medicine_medical_equipment(callback: CallbackQuery, state: FSMContext, bot):
+    """Tibbiy buyum va texnikalar buyurtmasi"""
+    if not await subscription_required(callback, bot):
+        return
+        
+    await state.set_state(MedicineOrderStates.message)
+    await state.update_data(order_type="Tibbiy buyum va texnikalar")
+    await callback.message.answer(
+        "🏥 <b>Tibbiy buyum va texnikalar buyurtmasi</b>\n\n"
+        "Kerakli tibbiy buyum yoki texnika nomini yozing yoki rasmini yuboring.\n"
+        "Miqdor va qo'shimcha ma'lumotlarni ham ko'rsating:",
+        parse_mode="HTML",
+        reply_markup=cancel_keyboard()
+    )
+    await callback.answer()
+
 @router.callback_query(F.data == "medicine_prescription")
 async def medicine_prescription(callback: CallbackQuery, state: FSMContext, bot):
     """Retsepli dori buyurtmasi"""
@@ -713,9 +803,9 @@ async def medicine_prescription(callback: CallbackQuery, state: FSMContext, bot)
         return
         
     await state.set_state(MedicineOrderStates.message)
-    await state.update_data(order_type="Retsepli dori")
+    await state.update_data(order_type="Retsepli dori vositalari")
     await callback.message.answer(
-        "📋 <b>Retsepli dori buyurtmasi</b>\n\n"
+        "📋 <b>Retsepli dori vositalari buyurtmasi</b>\n\n"
         "Retsept rasmini yoki dori nomini yuboring.\n"
         "Qo'shimcha ma'lumot ham yozishingiz mumkin:",
         parse_mode="HTML",
@@ -730,9 +820,9 @@ async def medicine_no_prescription(callback: CallbackQuery, state: FSMContext, b
         return
         
     await state.set_state(MedicineOrderStates.message)
-    await state.update_data(order_type="Retsepsiz dori")
+    await state.update_data(order_type="Retsepsiz dori vositalari")
     await callback.message.answer(
-        "💊 <b>Retsepsiz dori buyurtmasi</b>\n\n"
+        "💊 <b>Retsepsiz dori vositalari buyurtmasi</b>\n\n"
         "Kerakli dori nomini yozing yoki rasmini yuboring.\n"
         "Miqdor va qo'shimcha ma'lumotlarni ham ko'rsating:",
         parse_mode="HTML",
@@ -747,9 +837,9 @@ async def medicine_custom(callback: CallbackQuery, state: FSMContext, bot):
         return
         
     await state.set_state(MedicineOrderStates.message)
-    await state.update_data(order_type="Tayyorlanadigan dori")
+    await state.update_data(order_type="Tayyorlanadigan dori vositalari")
     await callback.message.answer(
-        "⚗️ <b>Tayyorlanadigan dori buyurtmasi</b>\n\n"
+        "⚗️ <b>Tayyorlanadigan dori vositalari buyurtmasi</b>\n\n"
         "Dori tarkibi, retsept yoki boshqa kerakli ma'lumotlarni yuboring.\n"
         "Rasm yoki matn ko'rinishida yuborishingiz mumkin:",
         parse_mode="HTML",
@@ -772,9 +862,11 @@ async def process_medicine_order(message: Message, state: FSMContext, bot):
     data = await state.get_data()
     order_type = data.get('order_type', 'Dori buyurtmasi')
     
-    # Adminga xabar yuborish
+    # Dori adminlariga xabar yuborish (MEDICINE_ADMIN va SUPER_ADMIN)
+    admin_ids = [MEDICINE_ADMIN_ID, SUPER_ADMIN_ID]
+    
     if message.photo:
-        # Rasm bilan xabar
+        
         admin_msg = (
             f"💊 <b>Yangi {order_type.lower()}!</b>\n\n"
             f"👤 <b>Ism:</b> {user.first_name} {user.last_name or ''}\n"
@@ -783,13 +875,15 @@ async def process_medicine_order(message: Message, state: FSMContext, bot):
         )
         
         try:
-            await bot.send_photo(
-                chat_id=ADMIN_ID,
-                photo=message.photo[-1].file_id,
-                caption=admin_msg,
-                parse_mode="HTML",
-                reply_markup=reply_to_user_keyboard(user.id)
-            )
+            # Har ikkala adminga yuborish
+            for admin_id in admin_ids:
+                await bot.send_photo(
+                    chat_id=admin_id,
+                    photo=message.photo[-1].file_id,
+                    caption=admin_msg,
+                    parse_mode="HTML",
+                    reply_markup=reply_to_user_keyboard(user.id)
+                )
             await message.answer(
                 f"✅ {order_type} buyurtmangiz adminga yuborildi!\n\nTez orada javob beramiz.",
                 reply_markup=main_menu()
@@ -811,12 +905,14 @@ async def process_medicine_order(message: Message, state: FSMContext, bot):
         )
         
         try:
-            await bot.send_message(
-                chat_id=ADMIN_ID,
-                text=admin_msg,
-                parse_mode="HTML",
-                reply_markup=reply_to_user_keyboard(user.id)
-            )
+            # Har ikkala adminga yuborish
+            for admin_id in admin_ids:
+                await bot.send_message(
+                    chat_id=admin_id,
+                    text=admin_msg,
+                    parse_mode="HTML",
+                    reply_markup=reply_to_user_keyboard(user.id)
+                )
             await message.answer(
                 f"✅ {order_type} buyurtmangiz adminga yuborildi!\n\nTez orada javob beramiz.",
                 reply_markup=main_menu()
@@ -872,13 +968,15 @@ async def process_user_reply(message: Message, state: FSMContext, bot):
                 f"📝 <b>Javob:</b>\n{message.caption or 'Rasm yuborildi'}"
             )
             
-            await bot.send_photo(
-                chat_id=ADMIN_ID,
-                photo=message.photo[-1].file_id,
-                caption=admin_msg,
-                parse_mode="HTML",
-                reply_markup=reply_to_user_keyboard(user.id)
-            )
+            # Barcha adminlarga yuborish
+            for admin_id in [ADMIN_ID, SUPER_ADMIN_ID]:
+                await bot.send_photo(
+                    chat_id=admin_id,
+                    photo=message.photo[-1].file_id,
+                    caption=admin_msg,
+                    parse_mode="HTML",
+                    reply_markup=reply_to_user_keyboard(user.id)
+                )
         
         # Video bilan javob
         elif message.video:
@@ -889,13 +987,15 @@ async def process_user_reply(message: Message, state: FSMContext, bot):
                 f"📝 <b>Javob:</b>\n{message.caption or 'Video yuborildi'}"
             )
             
-            await bot.send_video(
-                chat_id=ADMIN_ID,
-                video=message.video.file_id,
-                caption=admin_msg,
-                parse_mode="HTML",
-                reply_markup=reply_to_user_keyboard(user.id)
-            )
+            # Barcha adminlarga yuborish
+            for admin_id in [ADMIN_ID, SUPER_ADMIN_ID]:
+                await bot.send_video(
+                    chat_id=admin_id,
+                    video=message.video.file_id,
+                    caption=admin_msg,
+                    parse_mode="HTML",
+                    reply_markup=reply_to_user_keyboard(user.id)
+                )
         
         # Matn javob
         elif message.text:
@@ -906,12 +1006,14 @@ async def process_user_reply(message: Message, state: FSMContext, bot):
                 f"💬 <b>Javob:</b>\n{message.text}"
             )
             
-            await bot.send_message(
-                chat_id=ADMIN_ID,
-                text=admin_msg,
-                parse_mode="HTML",
-                reply_markup=reply_to_user_keyboard(user.id)
-            )
+            # Barcha adminlarga yuborish
+            for admin_id in [ADMIN_ID, SUPER_ADMIN_ID]:
+                await bot.send_message(
+                    chat_id=admin_id,
+                    text=admin_msg,
+                    parse_mode="HTML",
+                    reply_markup=reply_to_user_keyboard(user.id)
+                )
         
         else:
             await message.answer(
