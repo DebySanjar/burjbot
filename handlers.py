@@ -932,6 +932,7 @@ async def process_medicine_order(message: Message, state: FSMContext, bot):
         return
     
     await state.clear()
+
 # Foydalanuvchi admin javobiga javob berish
 @router.callback_query(F.data == "user_reply")
 async def user_reply_button_clicked(callback: CallbackQuery, state: FSMContext):
