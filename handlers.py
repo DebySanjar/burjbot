@@ -154,9 +154,7 @@ async def cmd_start(message: Message, bot):
     # A'zo bo'lsa, oddiy menyu
     vacancy_text = database.get_vacancy()
     welcome_text = (
-        "🎉 <b>Xush kelibsiz!</b>\n\n"
         f"{vacancy_text}\n\n"
-        "🚀 Quyidagi tugmalardan foydalaning:"
     )
     await message.answer(welcome_text, parse_mode="HTML", reply_markup=main_menu())
 

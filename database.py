@@ -1,11 +1,11 @@
 """Ma'lumotlarni saqlash uchun oddiy modul"""
 
 # Vakansiya matni
-current_vacancy = """Assalomu alaykum! 👋
+current_vacancy = """Assalomu alaykum ,
 
-Burj Aptekaga ishga ariza berish uchun iltimos quyidagi ma'lumotlarni yozib yuboring.
+Burj dorixonasining rasmiy botiga xush kelibsiz! 
 
-Sizning ma'lumotlaringizni qabul qilingandan so'ng siz bilan bog'lanamiz"""
+ Xizmatlardan foydalanish uchun kerakli bo'limlarni tanlang."""
 
 # Foydalanuvchilar ro'yxati
 users = {}
