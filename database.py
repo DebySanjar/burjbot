@@ -3,7 +3,7 @@
 # Vakansiya matni
 current_vacancy = """Assalomu alaykum ,
 
-Burj dorixonasining rasmiy botiga xush kelibsiz! 
+BURJ dorixonasining rasmiy botiga xush kelibsiz! 
 
  Xizmatlardan foydalanish uchun kerakli bo'limlarni tanlang."""
 
