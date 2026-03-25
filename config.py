@@ -18,6 +18,7 @@ CHANNEL_ID = "@Burj_spravichniy"  # Kanal username
 CHANNEL_URL = "https://t.me/Burj_spravichniy"  # Kanal linki
 
 # Xatoliklarni tekshirish
+
 if not BOT_TOKEN:
     raise ValueError("BOT_TOKEN topilmadi! .env faylini tekshiring.")
 
