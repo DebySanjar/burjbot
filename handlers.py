@@ -52,7 +52,7 @@ async def subscription_required(message_or_callback, bot):
     user_id = message_or_callback.from_user.id
 
     # Admin uchun a'zolik tekshiruvi yo'q
-    if user_id == ADMIN_ID:
+    if user_id in [ADMIN_ID, SUPER_ADMIN_ID]:
         return True
 
     is_subscribed = await check_user_subscription(bot, user_id)
@@ -82,7 +82,7 @@ async def cmd_cancel(message: Message, state: FSMContext):
     """Har qanday holatdan bekor qilish va bosh menyuga qaytish"""
     await state.clear()
     user_id = message.from_user.id
-    is_admin = user_id == ADMIN_ID
+    is_admin = user_id in [ADMIN_ID, SUPER_ADMIN_ID]
     await message.answer(
         "❌ Bekor qilindi. Bosh menyuga qaytdingiz.",
         reply_markup=admin_keyboard() if is_admin else main_menu()
@@ -225,7 +225,7 @@ async def process_job_type_text(message: Message, state: FSMContext):
     if message.text == "❌ Bekor qilish":
         await state.clear()
         user_id = message.from_user.id
-        is_admin = user_id == ADMIN_ID
+        is_admin = user_id in [ADMIN_ID, SUPER_ADMIN_ID]
         await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
         return
     await message.answer("Iltimos, yuqoridagi tugmalardan birini tanlang:", reply_markup=job_types_keyboard())
@@ -236,7 +236,7 @@ async def process_name(message: Message, state: FSMContext):
     if message.text == "❌ Bekor qilish":
         await state.clear()
         user_id = message.from_user.id
-        is_admin = user_id == ADMIN_ID
+        is_admin = user_id in [ADMIN_ID, SUPER_ADMIN_ID]
         await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
         return
     await state.update_data(name=message.text)
@@ -249,7 +249,7 @@ async def process_age(message: Message, state: FSMContext):
     if message.text == "❌ Bekor qilish":
         await state.clear()
         user_id = message.from_user.id
-        is_admin = user_id == ADMIN_ID
+        is_admin = user_id in [ADMIN_ID, SUPER_ADMIN_ID]
         await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
         return
     await state.update_data(age=message.text)
@@ -262,7 +262,7 @@ async def process_education(message: Message, state: FSMContext):
     if message.text == "❌ Bekor qilish":
         await state.clear()
         user_id = message.from_user.id
-        is_admin = user_id == ADMIN_ID
+        is_admin = user_id in [ADMIN_ID, SUPER_ADMIN_ID]
         await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
         return
     await state.update_data(education=message.text)
@@ -275,7 +275,7 @@ async def process_previous_work(message: Message, state: FSMContext):
     if message.text == "❌ Bekor qilish":
         await state.clear()
         user_id = message.from_user.id
-        is_admin = user_id == ADMIN_ID
+        is_admin = user_id in [ADMIN_ID, SUPER_ADMIN_ID]
         await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
         return
     await state.update_data(previous_work=message.text)
@@ -288,7 +288,7 @@ async def process_current_status(message: Message, state: FSMContext):
     if message.text == "❌ Bekor qilish":
         await state.clear()
         user_id = message.from_user.id
-        is_admin = user_id == ADMIN_ID
+        is_admin = user_id in [ADMIN_ID, SUPER_ADMIN_ID]
         await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
         return
     await state.update_data(current_status=message.text)
@@ -301,7 +301,7 @@ async def process_address(message: Message, state: FSMContext):
     if message.text == "❌ Bekor qilish":
         await state.clear()
         user_id = message.from_user.id
-        is_admin = user_id == ADMIN_ID
+        is_admin = user_id in [ADMIN_ID, SUPER_ADMIN_ID]
         await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
         return
     await state.update_data(address=message.text)
@@ -325,7 +325,7 @@ async def process_photo_invalid(message: Message, state: FSMContext):
     if message.text == "❌ Bekor qilish":
         await state.clear()
         user_id = message.from_user.id
-        is_admin = user_id == ADMIN_ID
+        is_admin = user_id in [ADMIN_ID, SUPER_ADMIN_ID]
         await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
         return
     await message.answer("❌ Iltimos, rasm yuboring!")
@@ -361,7 +361,7 @@ async def process_phone_text(message: Message, state: FSMContext):
     if message.text == "❌ Bekor qilish":
         await state.clear()
         user_id = message.from_user.id
-        is_admin = user_id == ADMIN_ID
+        is_admin = user_id in [ADMIN_ID, SUPER_ADMIN_ID]
         await message.answer("❌ Anketa bekor qilindi.", reply_markup=admin_keyboard() if is_admin else main_menu())
         return
 
@@ -433,7 +433,7 @@ async def restart_form(callback: CallbackQuery, state: FSMContext):
 
 @router.message(F.text == "📢 Vakansiya e'lon qilish")
 async def admin_vacancy(message: Message, state: FSMContext):
-    if message.from_user.id != ADMIN_ID:
+    if message.from_user.id not in [ADMIN_ID, SUPER_ADMIN_ID]:
         await message.answer("❌ Sizda ruxsat yo'q!")
         return
     await state.set_state(AdminStates.vacancy_text)
@@ -474,7 +474,7 @@ async def confirm_vacancy(callback: CallbackQuery, state: FSMContext, bot):
     await callback.message.answer("⏳ Yuborilmoqda...", reply_markup=admin_keyboard())
 
     for user_id in user_ids:
-        if user_id == ADMIN_ID:
+        if user_id in [ADMIN_ID, SUPER_ADMIN_ID]:
             continue
         try:
             await bot.send_message(chat_id=user_id, text=f"📢 <b>Yangi vakansiya e'loni!</b>\n\n{vacancy_text}",
@@ -508,7 +508,7 @@ async def restart_vacancy(callback: CallbackQuery, state: FSMContext):
 
 @router.message(F.text == "📊 Statistika")
 async def admin_stats(message: Message):
-    if message.from_user.id != ADMIN_ID:
+    if message.from_user.id not in [ADMIN_ID, SUPER_ADMIN_ID]:
         await message.answer("❌ Sizda ruxsat yo'q!")
         return
     users_count = database.get_users_count() - 1  # Admin hisoblanmasin
@@ -521,7 +521,7 @@ async def admin_stats(message: Message):
 
 @router.message(F.text == "🔍 Qidirish")
 async def search_users_menu(message: Message):
-    if message.from_user.id != ADMIN_ID:
+    if message.from_user.id not in [ADMIN_ID, SUPER_ADMIN_ID]:
         await message.answer("❌ Sizda ruxsat yo'q!")
         return
     await message.answer("🔍 <b>Qidiruv</b>\n\nQidiruv turini tanlang:", parse_mode="HTML",
@@ -818,8 +818,9 @@ async def check_subscription_callback(callback: CallbackQuery, bot):
     user_id = callback.from_user.id
 
     # Admin uchun a'zolik tekshiruvi yo'q
-    if user_id == ADMIN_ID:
-        await callback.message.answer("👋 Assalomu alaykum, Admin!\n\nSiz admin panelidasiz.",
+    if user_id in [ADMIN_ID, SUPER_ADMIN_ID]:
+        admin_type = "Super Admin" if user_id == SUPER_ADMIN_ID else "Admin"
+        await callback.message.answer(f"👋 Assalomu alaykum, {admin_type}!\n\nSiz admin panelidasiz.",
                                       reply_markup=admin_keyboard())
         await callback.answer()
         return
