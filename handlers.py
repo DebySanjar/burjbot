@@ -951,8 +951,8 @@ async def process_medicine_order(message: Message, state: FSMContext, bot):
     data = await state.get_data()
     order_type = data.get('order_type', 'Dori buyurtmasi')
 
-    # Dori adminlariga xabar yuborish (MEDICINE_ADMIN va SUPER_ADMIN)
-    admin_ids = [MEDICINE_ADMIN_ID, SUPER_ADMIN_ID]
+    # Dori adminlariga xabar yuborish (ADMIN, MEDICINE_ADMIN va SUPER_ADMIN)
+    admin_ids = [ADMIN_ID, MEDICINE_ADMIN_ID, SUPER_ADMIN_ID]
 
     if message.photo:
 
@@ -963,9 +963,10 @@ async def process_medicine_order(message: Message, state: FSMContext, bot):
             f"📝 <b>Izoh:</b>\n{message.caption or 'Rasm yuborildi'}"
         )
 
-        try:
-            # Har ikkala adminga yuborish
-            for admin_id in admin_ids:
+        # Har uchala adminga yuborish
+        success_count = 0
+        for admin_id in admin_ids:
+            try:
                 await bot.send_photo(
                     chat_id=admin_id,
                     photo=message.photo[-1].file_id,
@@ -973,16 +974,20 @@ async def process_medicine_order(message: Message, state: FSMContext, bot):
                     parse_mode="HTML",
                     reply_markup=reply_to_user_keyboard(user.id)
                 )
+                success_count += 1
+            except Exception as admin_error:
+                print(f"Failed to send photo to admin {admin_id}: {admin_error}")
+        
+        if success_count > 0:
             await message.answer(
                 f"✅ {order_type} buyurtmangiz adminga yuborildi!\n\nTez orada javob beramiz.",
                 reply_markup=main_menu()
             )
-        except Exception as e:
+        else:
             await message.answer(
                 "❌ Xatolik yuz berdi. Iltimos, keyinroq urinib ko'ring.",
                 reply_markup=main_menu()
             )
-            print(f"Failed to send medicine order to admin: {e}")
 
     elif message.text:
         # Matn xabar
@@ -993,25 +998,30 @@ async def process_medicine_order(message: Message, state: FSMContext, bot):
             f"💬 <b>Buyurtma:</b>\n{message.text}"
         )
 
-        try:
-            # Har ikkala adminga yuborish
-            for admin_id in admin_ids:
+        # Har uchala adminga yuborish
+        success_count = 0
+        for admin_id in admin_ids:
+            try:
                 await bot.send_message(
                     chat_id=admin_id,
                     text=admin_msg,
                     parse_mode="HTML",
                     reply_markup=reply_to_user_keyboard(user.id)
                 )
+                success_count += 1
+            except Exception as admin_error:
+                print(f"Failed to send message to admin {admin_id}: {admin_error}")
+        
+        if success_count > 0:
             await message.answer(
                 f"✅ {order_type} buyurtmangiz adminga yuborildi!\n\nTez orada javob beramiz.",
                 reply_markup=main_menu()
             )
-        except Exception as e:
+        else:
             await message.answer(
                 "❌ Xatolik yuz berdi. Iltimos, keyinroq urinib ko'ring.",
                 reply_markup=main_menu()
             )
-            print(f"Failed to send medicine order to admin: {e}")
 
     else:
         await message.answer(
