@@ -1,11 +1,10 @@
 """Ma'lumotlarni saqlash uchun oddiy modul"""
 
 # Vakansiya matni
-current_vacancy = """Assalomu alaykum ,
+current_vacancy = """✨Assalomu alaykum ,
 
-BURJ dorixonasining rasmiy botiga xush kelibsiz! 
-
- Xizmatlardan foydalanish uchun kerakli bo'limlarni tanlang."""
+🏥BURJ dorixonasining rasmiy botiga xush kelibsiz! 
+Xizmatlardan foydalanish uchun kerakli bo'limlarni tanlang."""
 
 # Foydalanuvchilar ro'yxati
 users = {}

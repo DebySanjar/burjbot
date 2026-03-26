@@ -94,9 +94,9 @@ async def cmd_help(message: Message, bot, state: FSMContext):
     """Bot haqida ma'lumot"""
     await state.clear()
     await message.answer(
-        "🤖 <b>Burj Apteka - Rasmiy Xizmat Boti</b>\n\n"
+        "🤖 <b>BURJ dorixonasining  rasmiy xizmat boti</b>\n\n"
         "🏥 <b>Biz haqimizda:</b>\n"
-        "Burj Apteka - O'zbekistondagi yetakchi dorixonalar tarmog'i. Sifatli dori vositalari va professional xizmat ko'rsatish bilan mijozlarimizga xizmat qilamiz.\n\n"
+        "BURJ dorixonasi  - Farg'onadagi yetakchi dorixonalar tarmog'i. Sifatli dori vositalari va professional xizmat ko'rsatish bilan mijozlarimizga xizmat qilamiz.\n\n"
         "📋 <b>Bot imkoniyatlari:</b>\n\n"
         "💊 <b>Dori buyurtma berish</b>\n"
         "   • Tibbiy buyum va texnikalar\n"
@@ -168,9 +168,9 @@ async def about_bot(message: Message, bot, state: FSMContext):
         return
 
     await message.answer(
-        "🤖 <b>Burj Apteka - Rasmiy Xizmat Boti</b>\n\n"
+      "🤖 <b>BURJ dorixonasining  rasmiy xizmat boti</b>\n\n"
         "🏥 <b>Biz haqimizda:</b>\n"
-        "Burj Apteka - O'zbekistondagi yetakchi dorixonalar tarmog'i. Sifatli dori vositalari va professional xizmat ko'rsatish bilan mijozlarimizga xizmat qilamiz.\n\n"
+        "BURJ dorixonasi - Farg'onadagi yetakchi dorixonalar tarmog'i. Sifatli dori vositalari va professional xizmat ko'rsatish bilan mijozlarimizga xizmat qilamiz.\n\n"
         "📋 <b>Bot imkoniyatlari:</b>\n\n"
         "💊 <b>Dori buyurtma berish</b>\n"
         "   • Tibbiy buyum va texnikalar\n"

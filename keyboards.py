@@ -147,8 +147,8 @@ def medicine_order_keyboard():
     """Dori buyurtma variantlari"""
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="🏥 Tibbiy buyum va texnikalar", callback_data="medicine_medical_equipment")],
             [InlineKeyboardButton(text="⚗️ Tayyorlanadigan dori vositalari", callback_data="medicine_custom")],
+            [InlineKeyboardButton(text="🏥 Tibbiy buyum va texnikalar", callback_data="medicine_medical_equipment")],
             [InlineKeyboardButton(text="📋 Retsepli dori vositalari", callback_data="medicine_prescription")],
             [InlineKeyboardButton(text="💊 Retsepsiz dori vositalari", callback_data="medicine_no_prescription")]
         ]
