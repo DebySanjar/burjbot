@@ -89,6 +89,7 @@ async def cmd_cancel(message: Message, state: FSMContext):
     )
 
 
+
 @router.message(Command("help"))
 async def cmd_help(message: Message, bot, state: FSMContext):
     """Bot haqida ma'lumot"""
