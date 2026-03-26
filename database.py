@@ -1,10 +1,13 @@
 """Ma'lumotlarni saqlash uchun oddiy modul"""
 
 # Vakansiya matni
-current_vacancy = """✨Assalomu alaykum ,
+current_vacancy = """🎉 <b>Xush kelibsiz!</b>
 
-🏥BURJ dorixonasining rasmiy botiga xush kelibsiz! 
+🏥 BURJ dorixonasining rasmiy botiga xush kelibsiz! 
 Xizmatlardan foydalanish uchun kerakli bo'limlarni tanlang."""
+
+# E'lon qilingan vakansiya
+posted_vacancy = ""
 
 # Foydalanuvchilar ro'yxati
 users = {}
@@ -20,6 +23,22 @@ def set_vacancy(text):
     """Vakansiyani yangilash"""
     global current_vacancy
     current_vacancy = text
+
+def get_posted_vacancy():
+    """E'lon qilingan vakansiyani olish"""
+    return posted_vacancy
+
+def set_posted_vacancy(text):
+    """E'lon qilingan vakansiyani yangilash"""
+    global posted_vacancy
+    posted_vacancy = text
+
+def get_full_welcome_message():
+    """To'liq xush kelibsiz xabarini olish"""
+    message = current_vacancy
+    if posted_vacancy.strip():
+        message += f"\n\n📋 <b>Bizda hozircha quyidagi vakansiyalar mavjud:</b>\n\n{posted_vacancy}"
+    return message
 
 def add_user_id(user_id):
     """Foydalanuvchi ID sini saqlash"""

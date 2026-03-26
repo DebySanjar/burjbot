@@ -152,10 +152,7 @@ async def cmd_start(message: Message, bot):
         return
 
     # A'zo bo'lsa, oddiy menyu
-    vacancy_text = database.get_vacancy()
-    welcome_text = (
-        f"{vacancy_text}\n\n"
-    )
+    welcome_text = database.get_full_welcome_message()
     await message.answer(welcome_text, parse_mode="HTML", reply_markup=main_menu())
 
 
@@ -466,7 +463,8 @@ async def confirm_vacancy(callback: CallbackQuery, state: FSMContext, bot):
     data = await state.get_data()
     vacancy_text = data['vacancy_text']
 
-    database.set_vacancy(vacancy_text)
+    # E'lon qilingan vakansiyani saqlash
+    database.set_posted_vacancy(vacancy_text)
     user_ids = database.get_all_user_ids()
     success_count = 0
     failed_count = 0
@@ -828,9 +826,9 @@ async def check_subscription_callback(callback: CallbackQuery, bot):
     is_subscribed = await check_user_subscription(bot, user_id)
 
     if is_subscribed:
-        vacancy_text = database.get_vacancy()
+        welcome_text = database.get_full_welcome_message()
         await callback.message.answer(
-            "✅ <b>Rahmat! Siz kanalga a'zo bo'ldingiz.</b>\n\n" + vacancy_text,
+            "✅ <b>Rahmat! Siz kanalga a'zo bo'ldingiz.</b>\n\n" + welcome_text,
             parse_mode="HTML",
             reply_markup=main_menu()
         )
