@@ -51,8 +51,8 @@ async def subscription_required(message_or_callback, bot):
     """A'zolik talab qilinadi - umumiy funksiya"""
     user_id = message_or_callback.from_user.id
 
-    # Admin uchun a'zolik tekshiruvi yo'q
-    if user_id in [ADMIN_ID, SUPER_ADMIN_ID]:
+    # Adminlar uchun a'zolik tekshiruvi yo'q
+    if is_admin(user_id) or is_medicine_admin(user_id):
         return True
 
     is_subscribed = await check_user_subscription(bot, user_id)
@@ -128,8 +128,14 @@ async def cmd_start(message: Message, bot):
 
     # Adminlar uchun
     if is_admin(user_id):
-        admin_type = "Super Admin" if is_super_admin(user_id) else (
-            "Dori Admin" if is_medicine_admin(user_id) else "Admin")
+        # Admin turini aniqlash
+        if is_super_admin(user_id):
+            admin_type = "Super Admin"
+        elif user_id == MEDICINE_ADMIN_ID:
+            admin_type = "Dori Admin"
+        else:
+            admin_type = "Admin"
+        
         await message.answer(
             f"🔐 <b>{admin_type} Panel</b>\n\n"
             "👋 Assalomu alaykum!\n"
@@ -155,6 +161,8 @@ async def cmd_start(message: Message, bot):
     # A'zo bo'lsa, oddiy menyu
     welcome_text = database.get_full_welcome_message()
     await message.answer(welcome_text, parse_mode="HTML", reply_markup=main_menu())
+
+
 
 
 @router.message(F.text == "ℹ️ Bot haqida")
@@ -473,7 +481,7 @@ async def confirm_vacancy(callback: CallbackQuery, state: FSMContext, bot):
     await callback.message.answer("⏳ Yuborilmoqda...", reply_markup=admin_keyboard())
 
     for user_id in user_ids:
-        if user_id in [ADMIN_ID, SUPER_ADMIN_ID]:
+        if user_id in [ADMIN_ID, SUPER_ADMIN_ID, MEDICINE_ADMIN_ID]:
             continue
         try:
             await bot.send_message(chat_id=user_id, text=f"📢 <b>Yangi vakansiya e'loni!</b>\n\n{vacancy_text}",
@@ -659,6 +667,7 @@ async def process_reply_message(message: Message, state: FSMContext, bot):
 
     data = await state.get_data()
     user_id = data['user_id']
+    admin_id = message.from_user.id
 
     try:
         # Rasm bilan javob
@@ -816,9 +825,16 @@ async def check_subscription_callback(callback: CallbackQuery, bot):
     """A'zolikni tekshirish tugmasi bosildi"""
     user_id = callback.from_user.id
 
-    # Admin uchun a'zolik tekshiruvi yo'q
-    if user_id in [ADMIN_ID, SUPER_ADMIN_ID]:
-        admin_type = "Super Admin" if user_id == SUPER_ADMIN_ID else "Admin"
+    # Adminlar uchun a'zolik tekshiruvi yo'q
+    if is_admin(user_id):
+        # Admin turini aniqlash
+        if is_super_admin(user_id):
+            admin_type = "Super Admin"
+        elif user_id == MEDICINE_ADMIN_ID:
+            admin_type = "Dori Admin"
+        else:
+            admin_type = "Admin"
+        
         await callback.message.answer(f"👋 Assalomu alaykum, {admin_type}!\n\nSiz admin panelidasiz.",
                                       reply_markup=admin_keyboard())
         await callback.answer()
@@ -1069,15 +1085,18 @@ async def process_user_reply(message: Message, state: FSMContext, bot):
                 f"📝 <b>Javob:</b>\n{message.caption or 'Rasm yuborildi'}"
             )
 
-            # Barcha adminlarga yuborish
-            for admin_id in [ADMIN_ID, SUPER_ADMIN_ID]:
-                await bot.send_photo(
-                    chat_id=admin_id,
-                    photo=message.photo[-1].file_id,
-                    caption=admin_msg,
-                    parse_mode="HTML",
-                    reply_markup=reply_to_user_keyboard(user.id)
-                )
+            # Barcha adminlarga yuborish (dori buyurtma bo'lishi mumkinligi uchun)
+            for admin_id in [ADMIN_ID, SUPER_ADMIN_ID, MEDICINE_ADMIN_ID]:
+                try:
+                    await bot.send_photo(
+                        chat_id=admin_id,
+                        photo=message.photo[-1].file_id,
+                        caption=admin_msg,
+                        parse_mode="HTML",
+                        reply_markup=reply_to_user_keyboard(user.id)
+                    )
+                except Exception as e:
+                    print(f"Failed to send photo to admin {admin_id}: {e}")
 
         # Video bilan javob
         elif message.video:
@@ -1088,15 +1107,18 @@ async def process_user_reply(message: Message, state: FSMContext, bot):
                 f"📝 <b>Javob:</b>\n{message.caption or 'Video yuborildi'}"
             )
 
-            # Barcha adminlarga yuborish
-            for admin_id in [ADMIN_ID, SUPER_ADMIN_ID]:
-                await bot.send_video(
-                    chat_id=admin_id,
-                    video=message.video.file_id,
-                    caption=admin_msg,
-                    parse_mode="HTML",
-                    reply_markup=reply_to_user_keyboard(user.id)
-                )
+            # Barcha adminlarga yuborish (dori buyurtma bo'lishi mumkinligi uchun)
+            for admin_id in [ADMIN_ID, SUPER_ADMIN_ID, MEDICINE_ADMIN_ID]:
+                try:
+                    await bot.send_video(
+                        chat_id=admin_id,
+                        video=message.video.file_id,
+                        caption=admin_msg,
+                        parse_mode="HTML",
+                        reply_markup=reply_to_user_keyboard(user.id)
+                    )
+                except Exception as e:
+                    print(f"Failed to send video to admin {admin_id}: {e}")
 
         # Matn javob
         elif message.text:
@@ -1107,14 +1129,17 @@ async def process_user_reply(message: Message, state: FSMContext, bot):
                 f"💬 <b>Javob:</b>\n{message.text}"
             )
 
-            # Barcha adminlarga yuborish
-            for admin_id in [ADMIN_ID, SUPER_ADMIN_ID]:
-                await bot.send_message(
-                    chat_id=admin_id,
-                    text=admin_msg,
-                    parse_mode="HTML",
-                    reply_markup=reply_to_user_keyboard(user.id)
-                )
+            # Barcha adminlarga yuborish (dori buyurtma bo'lishi mumkinligi uchun)
+            for admin_id in [ADMIN_ID, SUPER_ADMIN_ID, MEDICINE_ADMIN_ID]:
+                try:
+                    await bot.send_message(
+                        chat_id=admin_id,
+                        text=admin_msg,
+                        parse_mode="HTML",
+                        reply_markup=reply_to_user_keyboard(user.id)
+                    )
+                except Exception as e:
+                    print(f"Failed to send message to admin {admin_id}: {e}")
 
         else:
             await message.answer(
