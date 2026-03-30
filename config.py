@@ -6,7 +6,7 @@ load_dotenv()
 BOT_TOKEN = os.getenv('BOT_TOKEN', '8638136717:AAE5GlDzWsnCnQ_XYTnMXiXRhdXG_5ibKwI')
 ADMIN_ID = int(os.getenv('ADMIN_ID', '1961347582'))  # Asosiy admin
 SUPER_ADMIN_ID = 62791591  # Super admin
-MEDICINE_ADMIN_ID = 6502918946  # Dori buyurtma admin
+MEDICINE_ADMIN_ID = 547584005  # Dori buyurtma admin
 
 # Barcha adminlar ro'yxati
 ALL_ADMINS = [ADMIN_ID, SUPER_ADMIN_ID, MEDICINE_ADMIN_ID]
