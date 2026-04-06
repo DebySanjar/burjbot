@@ -11,6 +11,7 @@ MEDICINE_ADMIN_ID = 547584005  # Dori buyurtma admin
 # Barcha adminlar ro'yxati
 ALL_ADMINS = [ADMIN_ID, SUPER_ADMIN_ID, MEDICINE_ADMIN_ID]
 
+
 # Majburiy kanal
 
 CHANNEL_ID = "@Burj_spravichniy"  # Kanal username
