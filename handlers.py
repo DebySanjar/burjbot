@@ -78,14 +78,35 @@ async def subscription_required(message_or_callback, bot):
 
 
 @router.message(Command("cancel"))
-async def cmd_cancel(message: Message, state: FSMContext):
+async def cmd_cancel(message: Message, state: FSMContext, bot):
     """Har qanday holatdan bekor qilish va bosh menyuga qaytish"""
     await state.clear()
     user_id = message.from_user.id
-    is_admin = user_id in [ADMIN_ID, SUPER_ADMIN_ID]
+    
+    # Adminlar uchun
+    if is_admin(user_id):
+        await message.answer(
+            "❌ Bekor qilindi. Bosh menyuga qaytdingiz.",
+            reply_markup=admin_keyboard()
+        )
+        return
+    
+    # Oddiy foydalanuvchi uchun a'zolikni tekshirish
+    is_subscribed = await check_user_subscription(bot, user_id)
+    
+    if not is_subscribed:
+        await message.answer(
+            "🔒 <b>Kanalga qo'shiling!</b>\n\n"
+            "📢 Botdan foydalanish uchun rasmiy kanalimizga a'zo bo'ling.\n\n"
+            "✨ A'zo bo'lgandan keyin barcha imkoniyatlardan foydalaning!",
+            parse_mode="HTML",
+            reply_markup=channel_subscription_keyboard(CHANNEL_URL)
+        )
+        return
+    
     await message.answer(
         "❌ Bekor qilindi. Bosh menyuga qaytdingiz.",
-        reply_markup=admin_keyboard() if is_admin else main_menu()
+        reply_markup=main_menu()
     )
 
 
@@ -835,6 +856,12 @@ async def check_subscription_callback(callback: CallbackQuery, bot):
         else:
             admin_type = "Admin"
         
+        # Eski xabarni o'chirish
+        try:
+            await callback.message.delete()
+        except:
+            pass
+        
         await callback.message.answer(f"👋 Assalomu alaykum, {admin_type}!\n\nSiz admin panelidasiz.",
                                       reply_markup=admin_keyboard())
         await callback.answer()
@@ -843,9 +870,17 @@ async def check_subscription_callback(callback: CallbackQuery, bot):
     is_subscribed = await check_user_subscription(bot, user_id)
 
     if is_subscribed:
+        # Eski xabarni o'chirish
+        try:
+            await callback.message.delete()
+        except:
+            pass
+        
+        # Xush kelibsiz xabarini yuborish
         welcome_text = database.get_full_welcome_message()
         await callback.message.answer(
-            "✅ <b>Rahmat! Siz kanalga a'zo bo'ldingiz.</b>\n\n" + welcome_text,
+            "✅ <b>A'zo bo'lganingiz uchun rahmat!</b>\n\n"
+            "Bizning xizmatlarimizdan endilikda foydalanishingiz mumkin.\n\n" + welcome_text,
             parse_mode="HTML",
             reply_markup=main_menu()
         )
