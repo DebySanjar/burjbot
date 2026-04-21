@@ -4,7 +4,9 @@
 current_vacancy = """🎉 <b>Xush kelibsiz!</b>
 
 🏥 BURJ dorixonasining rasmiy botiga xush kelibsiz! 
-Xizmatlardan foydalanish uchun kerakli bo'limlarni tanlang."""
+Xizmatlardan foydalanish uchun kerakli bo'limlarni tanlang.
+
+🕐 <b>Ish vaqtimiz:</b> Du-Sha, 08:00-17:00"""
 
 # E'lon qilingan vakansiya
 posted_vacancy = ""

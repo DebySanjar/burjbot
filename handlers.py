@@ -136,7 +136,7 @@ async def cmd_help(message: Message, bot, state: FSMContext):
         "📞 <b>Aloqa ma'lumotlari:</b>\n"
         "   Telefon: +998954040909\n"
         "   Telegram: @Burj_spravichniy\n\n"
-        "⏰ <b>Ish tartibi:</b> 24/7 - Har doim xizmatdamiz!\n\n"
+        "🕐 <b>Ish vaqtimiz:</b> Du-Sha, 08:00-17:00\n\n"
         "💬 Savollaringiz bo'lsa, bemalol murojaat qiling!",
         parse_mode="HTML"
     )
@@ -215,7 +215,7 @@ async def about_bot(message: Message, bot, state: FSMContext):
         "📞 <b>Aloqa ma'lumotlari:</b>\n"
         "   Telefon: +998954040909\n"
         "   Telegram: @Burj_spravichniy\n\n"
-        "⏰ <b>Ish tartibi:</b> 24/7 - Har doim xizmatdamiz!\n\n"
+        "🕐 <b>Ish vaqtimiz:</b> Du-Sha, 08:00-17:00\n\n"
         "💬 Savollaringiz bo'lsa, bemalol murojaat qiling!",
         parse_mode="HTML"
     )
